@@ -27,9 +27,16 @@
 #include <memory>
 
 #include "curses/window.h"
+#include "settings.h"
 #include "song.h"
 #include "utility/type_conversions.h"
 #include "utility/wide_string.h"
+
+#ifdef HAVE_TAGLIB_H
+#include <fileref.h>
+#include <flacfile.h>
+#endif // HAVE_TAGLIB_H
+
 
 namespace {
 
@@ -281,6 +288,57 @@ time_t Song::getMTime() const
 {
 	assert(m_song);
 	return mpd_song_get_last_modified(m_song.get());
+}
+
+std::string MPD::Song::getSampleRate(unsigned pos) const
+{
+#	ifdef HAVE_TAGLIB_H
+	if (pos > 0) {
+		return "";
+	}
+	std::string path_to_file;
+	if (isFromDatabase())
+		path_to_file += Config.mpd_music_dir;
+	//path_to_file += MyFilename();
+	//path_to_file += mpd_song_get_uri(m_song.get());
+	path_to_file += getURI(0);
+	TagLib::FileRef f(path_to_file.c_str());
+	if (f.isNull()) {
+		return "taglib open failed";
+	}
+	std::stringstream ss;
+	ss << f.audioProperties()->sampleRate();
+	return ss.str();
+#	else // HAVE_TAGLIB_H
+	return "0";
+#	endif // HAVE_TAGLIB_H
+	}
+
+std::string MPD::Song::getBitWidth(unsigned pos) const
+{
+#	ifdef HAVE_TAGLIB_H
+	if (pos > 0) {
+		return "";
+	}
+	std::string path_to_file;
+	if (isFromDatabase())
+		path_to_file += Config.mpd_music_dir;
+	//path_to_file += MyFilename();
+	path_to_file += getURI(0);
+	TagLib::FileRef f(path_to_file.c_str());
+	if (f.isNull()) {
+		return "taglib open failed";
+	}
+	TagLib::FLAC::Properties* flacProperties = dynamic_cast<TagLib::FLAC::Properties*>(f.audioProperties());
+	if (flacProperties == NULL) {
+		return "0";
+	}
+	std::stringstream ss;
+	ss << flacProperties->bitsPerSample();
+	return ss.str();
+#	else // HAVE_TAGLIB_H
+	return "0";
+#	endif // HAVE_TAGLIB_H
 }
 
 bool Song::isFromDatabase() const

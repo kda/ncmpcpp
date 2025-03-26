@@ -504,6 +504,8 @@
 #
 #display_bitrate = no
 #
+#display_samplerate = no
+#
 #display_remaining_time = no
 #
 ## Available values: none, basic, extended, perl.

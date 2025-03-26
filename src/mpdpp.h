@@ -345,6 +345,22 @@ struct Output
 		assert(m_output.get() != nullptr);
 		return mpd_output_get_enabled(m_output.get());
 	}
+	unsigned sample_rate() const
+	{
+		assert(m_output.get() != nullptr);
+		const char* sample_rate = mpd_output_get_attribute(m_output.get(), "sample_rate");
+		if (sample_rate == nullptr)
+			return 0;
+		return atoi(sample_rate);
+	}
+	unsigned bits_per_sample() const
+	{
+		assert(m_output.get() != nullptr);
+		const char* bits_per_sample = mpd_output_get_attribute(m_output.get(), "bits_per_sample");
+		if (bits_per_sample == nullptr)
+			return 0;
+		return atoi(bits_per_sample);
+	}
 
 	bool empty() const { return m_output.get() == nullptr; }
 

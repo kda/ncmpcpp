@@ -73,6 +73,9 @@ int m_current_song_id;
 int m_current_song_pos;
 unsigned m_elapsed_time;
 unsigned m_kbps;
+bool m_rate_bits_set;
+unsigned m_samplespersec;
+unsigned m_bitwidth;
 MPD::PlayerState m_player_state;
 unsigned m_playlist_version;
 unsigned m_playlist_length;
@@ -355,6 +358,9 @@ void Status::clear()
 	m_current_song_id = -1;
 	m_current_song_pos = -1;
 	m_kbps = 0;
+	m_rate_bits_set = false;
+	m_samplespersec = 0;
+	m_bitwidth = 0;
 	m_player_state = MPD::psUnknown;
 	m_playlist_length = 0;
 	m_playlist_version = 0;
@@ -608,6 +614,14 @@ void Status::Changes::songID(int song_id)
 	elapsedTime(false);
 }
 
+void setRateBits(MPD::Output output) {
+  if (!m_rate_bits_set) {
+		m_samplespersec = output.sample_rate();
+		m_bitwidth = output.bits_per_sample();
+		m_rate_bits_set = true;
+	}
+}
+
 void Status::Changes::elapsedTime(bool update_elapsed)
 {
 	auto np = myPlaylist->nowPlayingSong();
@@ -627,6 +641,17 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 		auto st = Mpd.getStatus();
 		m_elapsed_time = st.elapsedTime();
 		m_kbps = st.kbps();
+		m_rate_bits_set = false;
+		for (MPD::OutputIterator out = Mpd.GetOutputs(), end; out != end; ++out)
+		{
+			if (out->enabled())
+			{
+				m_samplespersec = out->sample_rate();
+				m_bitwidth = out->bits_per_sample();
+				m_rate_bits_set = true;
+				break;
+			}
+		}
 	}
 
 	std::string ps = playerStateToString(m_player_state);
@@ -696,6 +721,19 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				tracklength += " (";
 				tracklength += boost::lexical_cast<std::string>(m_kbps);
 				tracklength += " kbps)";
+			}
+			if (Config.display_samplerate && m_samplespersec && m_bitwidth)
+			{
+				tracklength += " [";
+				if (m_player_state != MPD::psPlay)
+				{
+					tracklength += "rate/bits";
+				} else {
+					tracklength += boost::lexical_cast<std::string>(m_samplespersec);
+					tracklength += "/";
+					tracklength += boost::lexical_cast<std::string>(m_bitwidth);
+				}
+				tracklength += "]";
 			}
 
 			NC::WBuffer first, second;

@@ -72,6 +72,8 @@ struct Song
 	virtual std::string getComment(unsigned idx = 0) const;
 	virtual std::string getLength(unsigned idx = 0) const;
 	virtual std::string getPriority(unsigned idx = 0) const;
+	virtual std::string getSampleRate(unsigned idx = 0) const;
+	virtual std::string getBitWidth(unsigned idx = 0) const;
 	
 	virtual std::string getTags(GetFunction f) const;
 	

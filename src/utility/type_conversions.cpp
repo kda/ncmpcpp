@@ -196,6 +196,10 @@ MPD::Song::GetFunction charToGetFunction(char c)
 			return &MPD::Song::getComment;
 		case 'P':
 			return &MPD::Song::getPriority;
+		case 'r':
+			return &MPD::Song::getSampleRate;
+		case 'w':
+			return &MPD::Song::getBitWidth;
 		default:
 			return nullptr;
 	}

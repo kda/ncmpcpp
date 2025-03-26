@@ -170,6 +170,7 @@ struct Configuration
 	bool clock_display_seconds;
 	bool display_volume_level;
 	bool display_bitrate;
+	bool display_samplerate;
 	bool display_remaining_time;
 	bool ignore_leading_the;
 	bool ignore_diacritics;

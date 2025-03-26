@@ -28,6 +28,7 @@
 
 #ifdef HAVE_TAGLIB_H
 # include "fileref.h"
+# include "flacfile.h"
 # include "tag.h"
 # include <boost/lexical_cast.hpp>
 #endif // HAVE_TAGLIB_H
@@ -130,6 +131,12 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 			print_key_value(
 				"Sample rate",
 				boost::lexical_cast<std::string>(f.audioProperties()->sampleRate()) + " Hz");
+ 			TagLib::FLAC::Properties* flacProperties = dynamic_cast<TagLib::FLAC::Properties*>(f.audioProperties());
+			if (flacProperties != NULL) {
+				print_key_value(
+	        "Sample width",
+	        boost::lexical_cast<std::string>(flacProperties->bitsPerSample()) + " bits");
+	    }
 			print_key_value("Channels", channelsToString(f.audioProperties()->channels()));
 			
 			auto rginfo = Tags::readReplayGain(f.file());
